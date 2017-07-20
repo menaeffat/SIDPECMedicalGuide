@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "642832337100",
+    "firebase_url": "https://sidpecmedicalguide-b4abf.firebaseio.com",
+    "project_id": "sidpecmedicalguide-b4abf",
+    "storage_bucket": "sidpecmedicalguide-b4abf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642832337100:android:e7986eaeed54c90b",
+        "android_client_info": {
+          "package_name": "com.sidpec.sidpecmedicalguide"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642832337100-nus7qms2dah7v37q2bsk9kps9d609ipk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sidpec.sidpecmedicalguide",
+            "certificate_hash": "2ba73dc549366eccc6144d297ac21e3e214daad5"
+          }
+        },
+        {
+          "client_id": "642832337100-5osck8ugs76mvi5tr9m6ksfe0tonb67s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIDlq6a3cMq5qmULWUbJ75YObJIHgsu54"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642832337100-5osck8ugs76mvi5tr9m6ksfe0tonb67s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

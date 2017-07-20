@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">دليل سيدبك الطبي</string>
+
+    <string name="app_title">دليل سيدبك الطبي</string>
+
+    <string name="empty_text"></string>
+
+    <string name="signed_out">Signed Out</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="signed_in">Signed In</string>
+    <string name="google_user">Google User: %1$s</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="splash_logo_desc">Splash Logo</string>
+
+    <string name="default_entity_title_text">اسم الجهة العلاجية</string>
+    <string name="default_entity_address_text">عنوان الجهة العلاجية</string>
+
+
+    <string name="here_will_be_the_fav">لما تختار(ي) الجهات المفضلة ليك(ي) هاتشوف(ي)ها هنا</string>
+    <string name="here_will_be_the_list">لما يكون فيه جهات اعلاجية هاتشوف(ي)ها هنا</string>
+
+    <string name="where_is_that">فين ده؟</string>
+    <string name="added_to_fav">حطيناها في الجهات المفضلة</string>
+    <string name="removed_from_fav">شيلناها من الجهات المفضلة</string>
+
+
+    <string name="nav_fav">الجهات المفضلة</string>
+    <string name="nav_pharmacy">صيدليات</string>
+    <string name="nav_hospital">مستشفيات</string>
+    <string name="nav_lab">معامل</string>
+    <string name="nav_eyewear">نظارات</string>
+    <string name="nav_radiology_center">أشعة</string>
+    <string name="nav_med_center">مراكز</string>
+    <string name="nav_clinic">عيادات</string>
+    <string name="nav_list_all">كل الجهات العلاجية</string>
+
+    <string name="nav_search">بحث</string>
+    <string name="nav_">فين ده؟</string>
+    <string name="nav_Communicate">تواصل</string>
+    <string name="nav_feedback">أبعتلنا</string>
+
+    <string name="search_hint">اكتب جزء من اسم الجهة او التخصص</string>
+
+    <string name="action_dummy">insert dummy data</string>
+    <string name="search_title">بحث في </string>
+    <string name="entity_name">إسم الجهة</string>
+    <string name="title_phones">التليفونات</string>
+    <string name="no_phones">مافيش أرقام تليفونات للجهة دي</string>
+    <string name="default_entity_details_text">تفاصيل للجهة العلاجية، زي مواعيد العمل و كدة</string>
+    <string name="no_search_results">مافيش نتايج للبحث ده</string>
+    <string name="km_units">كم</string>
+    <string name="m_units">م</string>
+</resources>
