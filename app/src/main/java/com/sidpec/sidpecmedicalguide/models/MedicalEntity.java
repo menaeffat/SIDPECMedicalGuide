@@ -14,7 +14,7 @@ import java.util.Map;
 
 @IgnoreExtraProperties
 public class MedicalEntity {
-    public int entityID;
+    public String entityID;
     public String name;
     public String address;
     public String phone;
@@ -30,7 +30,7 @@ public class MedicalEntity {
 
     }
 
-    public MedicalEntity(int entityID, String name, String address, String phone, double lat, double lon, int cat_id, String metadata, String details) {
+    public MedicalEntity(String entityID, String name, String address, String phone, double lat, double lon, int cat_id, String metadata, String details) {
         this.entityID = entityID;
         this.name = name;
         this.address = address;

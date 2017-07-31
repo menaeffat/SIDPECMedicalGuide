@@ -24,6 +24,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SplashActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
@@ -188,6 +189,7 @@ public class SplashActivity extends BaseActivity implements GoogleApiClient.OnCo
                 }
             };
 
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
             Handler h = new Handler();
             h.postDelayed(r, sign_out_request ? 500 : 1000);
         } else {
