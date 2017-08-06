@@ -1,6 +1,8 @@
 package com.sidpec.sidpecmedicalguide;
 
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -9,43 +11,54 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sidpec.sidpecmedicalguide.adapters.medicalEntityArrayAdapter;
 import com.sidpec.sidpecmedicalguide.models.Category;
+import com.sidpec.sidpecmedicalguide.models.MedicalEntity;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private static final String TAG = "MainActivity";
     private static final int GROUP_CAT = 1000;
     private static final int NAV_FAV = -1;
-
+    GoogleApiClient mGoogleApiClient;
+    LocationRequest mLocationRequest;
+    Location my_location;
+    boolean inLocSortMode = false;
     private DatabaseReference mDatabase;
     private DatabaseReference mCats;
     private DatabaseReference mEntity;
+    private DatabaseReference mFavs;
 
     private NavigationView navigationView;
     private Menu menu;
-    private ValueEventListener entityValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
 
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
+    private HashMap<DatabaseReference, ValueEventListener> mListenerMap = new HashMap<>();
 
 //    private void submitData() {
 //
@@ -73,6 +86,51 @@ public class MainActivity extends BaseActivity
 //
 //        mDatabase.updateChildren(childUpdates);
 //    }
+private ValueEventListener entityValueEventListener = new ValueEventListener() {
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.content_home);
+        ListView listView = new ListView(getApplicationContext());
+        ArrayList arrayList = new ArrayList<MedicalEntity>();
+        ArrayAdapter<MedicalEntity> adapter;
+        relativeLayout.removeAllViews();
+
+        for (DataSnapshot dSnapshot : dataSnapshot.getChildren()) {
+            MedicalEntity ent = dSnapshot.getValue(MedicalEntity.class);
+            arrayList.add(ent);
+        }
+
+        adapter = new medicalEntityArrayAdapter(getApplicationContext(), 0, arrayList, my_location);
+        listView.setAdapter(adapter);
+        relativeLayout.addView(listView);
+
+        AdapterView.OnItemClickListener adapterViewListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                showEntity(view);
+            }
+        };
+
+        listView.setOnItemClickListener(adapterViewListener);
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+};
+    private ValueEventListener entityFavValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            favChanged(dataSnapshot);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,8 +147,8 @@ public class MainActivity extends BaseActivity
             @Override
             public void onClick(View view) {
                 //submitData();
-                String uemail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                Snackbar.make(view, "Replace with your own action " + uemail, Snackbar.LENGTH_LONG)
+                String user_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                Snackbar.make(view, "Replace with your own action " + user_email, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
@@ -124,6 +182,39 @@ public class MainActivity extends BaseActivity
             }
         };
         mCats.orderByChild("order").addValueEventListener(menuCatListener);
+
+        showFavs();
+    }
+
+    public void onConnected(Bundle connectionHint) {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(10000);
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);
+        } catch (SecurityException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        //Log.i(TAG, "GoogleApiClient connection has been suspend");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        //Log.i(TAG, "GoogleApiClient connection has failed");
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        //mLocationView.setText("Location received: " + location.toString());
+        my_location = location;
+        if (inLocSortMode) {
+            displayContent();
+        }
     }
 
     @Override
@@ -162,12 +253,6 @@ public class MainActivity extends BaseActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void test() {
-        mEntity.removeEventListener(entityValueEventListener);
-        mEntity = mDatabase.child("medical_entities/entities");
-        mEntity.orderByChild("name").addValueEventListener(entityValueEventListener);
-    }
-
     private void signOut() {
         Intent intent = new Intent(MainActivity.this, SplashActivity.class);
         Bundle b = new Bundle();
@@ -182,18 +267,107 @@ public class MainActivity extends BaseActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        Toast.makeText(this, String.valueOf(id), Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, String.valueOf(id), Toast.LENGTH_LONG).show();
+        this.setTitle(item.getTitle());
 
         if (id == NAV_FAV) {
             // Handle favs
-
+            showFavs();
         } else {
             //handle cat
-
+            cleanUpListeners();
+            mEntity = mDatabase.child("medical_entities/entities");
+            mListenerMap.put(mEntity, entityValueEventListener);
+            mEntity.orderByChild("catId").equalTo(id).addValueEventListener(entityValueEventListener);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showFavs() {
+        cleanUpListeners();
+        String user_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        String f_email = user_email.replaceAll("[.]", ",");
+        mEntity = mDatabase.child("users");
+        mListenerMap.put(mEntity, entityFavValueEventListener);
+        mEntity.child(f_email).addValueEventListener(entityFavValueEventListener);
+    }
+
+    private void favChanged(DataSnapshot dataSnapshot) {
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.content_home);
+        final ListView listView = new ListView(getApplicationContext());
+        final ArrayList arrayList = new ArrayList<MedicalEntity>();
+        final ArrayAdapter<MedicalEntity> adapter;
+        relativeLayout.removeAllViews();
+        adapter = new medicalEntityArrayAdapter(this, 0, arrayList, my_location);
+        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+            mFavs = mDatabase.child("medical_entities/entities");
+            ValueEventListener favsEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    MedicalEntity ent = dataSnapshot.getValue(MedicalEntity.class);
+                    if (ent != null) {
+                        arrayList.add(ent);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            };
+            mFavs.child(snapshot.getKey()).addListenerForSingleValueEvent(favsEventListener);
+        }
+
+        listView.setAdapter(adapter);
+        relativeLayout.addView(listView);
+
+        AdapterView.OnItemClickListener adapterViewListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                showEntity(view);
+            }
+        };
+
+        listView.setOnItemClickListener(adapterViewListener);
+    }
+
+    private void cleanUpListeners() {
+        if (mListenerMap == null)
+            return;
+        for (Map.Entry<DatabaseReference, ValueEventListener> entry : mListenerMap.entrySet()) {
+            DatabaseReference ref = entry.getKey();
+            ValueEventListener listener = entry.getValue();
+            ref.removeEventListener(listener);
+        }
+    }
+
+    private void showEntity(View view) {
+        TextView entityID = (TextView) view.findViewById(R.id.entityID);
+        Intent intent = new Intent(this, EntityDisplayActivity.class);
+        intent.putExtra(EXTRA_MESSAGE_TO_ENTITY, entityID.getText());
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cleanUpListeners();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+        cleanUpListeners();
     }
 }

@@ -20,11 +20,9 @@ public class MedicalEntity {
     public String phone;
     public double lat;
     public double lon;
-    public int cat_id;
+    public int catId;
     public String metadata;
     public String details;
-    public int favCount = 0;
-    public Map<String, Boolean> favs = new HashMap<>();
 
     public MedicalEntity() {
 
@@ -37,9 +35,37 @@ public class MedicalEntity {
         this.phone = phone;
         this.lat = lat;
         this.lon = lon;
-        this.cat_id = cat_id;
+        this.catId = cat_id;
         this.metadata = metadata;
         this.details = details;
+    }
+
+    public String getEntityID() {
+        return entityID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public double getLon() {
+        return lon;
+    }
+
+    public String getDetails() {
+        return details;
     }
 
     @Exclude
@@ -51,11 +77,9 @@ public class MedicalEntity {
         result.put("phone", phone);
         result.put("lat", lat);
         result.put("lon", lon);
-        result.put("cat_id", cat_id);
+        result.put("catId", catId);
         result.put("metadata", metadata);
         result.put("details", details);
-        result.put("favCount", favCount);
-        result.put("favs", favs);
 
         return result;
     }

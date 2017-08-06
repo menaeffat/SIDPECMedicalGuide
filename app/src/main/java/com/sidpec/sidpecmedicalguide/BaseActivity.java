@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class BaseActivity extends AppCompatActivity {
     public static final String dataNode = "V1";
+    public static final String EXTRA_MESSAGE_TO_ENTITY = "entity";
     private ProgressDialog mProgressDialog;
 
     public void showProgressDialog() {

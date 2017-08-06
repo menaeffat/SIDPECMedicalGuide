@@ -31,6 +31,8 @@ public class SplashActivity extends BaseActivity implements GoogleApiClient.OnCo
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
 
+    static boolean calledAlready = false;
+
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
@@ -188,8 +190,10 @@ public class SplashActivity extends BaseActivity implements GoogleApiClient.OnCo
                     }
                 }
             };
-
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+            if (!calledAlready) {
+                FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+                calledAlready = true;
+            }
             Handler h = new Handler();
             h.postDelayed(r, sign_out_request ? 500 : 1000);
         } else {
