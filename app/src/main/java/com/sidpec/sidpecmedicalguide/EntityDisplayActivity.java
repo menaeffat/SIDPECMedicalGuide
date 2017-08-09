@@ -16,8 +16,10 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,6 +38,7 @@ public class EntityDisplayActivity extends BaseActivity {
     String name;
     String phones[];
     String details;
+
     ValueEventListener entityValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -50,6 +53,18 @@ public class EntityDisplayActivity extends BaseActivity {
     };
     private DatabaseReference mDatabase;
     private DatabaseReference mEntity;
+    private DatabaseReference mIsFav;
+    ValueEventListener entityIsFav = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            favoriteButton(dataSnapshot.getValue() != null);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
     private HashMap<DatabaseReference, ValueEventListener> mListenerMap = new HashMap<>();
 
     @Override
@@ -68,6 +83,13 @@ public class EntityDisplayActivity extends BaseActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference(dataNode);
         mEntity = mDatabase.child("medical_entities/entities/" + entityID);
         mEntity.addValueEventListener(entityValueEventListener);
+        mListenerMap.put(mEntity, entityValueEventListener);
+        String user_email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        String f_email = user_email.replaceAll("[.]", ",");
+
+        mIsFav = mDatabase.child("users/" + f_email + "/" + entityID);
+        mIsFav.addValueEventListener(entityIsFav);
+        mListenerMap.put(mIsFav, entityIsFav);
     }
 
     private void setMedicalEntity(MedicalEntity medicalEntity) {
@@ -157,8 +179,8 @@ public class EntityDisplayActivity extends BaseActivity {
         tbFav.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //my_db.setMedicalEntityFav(id, isChecked);
                 checkFavButton(tbFav, isChecked);
+                mIsFav.setValue(isChecked ? 0 : null);
                 Snackbar.make(getWindow().getDecorView().getRootView(), isChecked ? R.string.added_to_fav : R.string.removed_from_fav, Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
         });

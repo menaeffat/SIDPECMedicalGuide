@@ -185,6 +185,9 @@ public class SplashActivity extends BaseActivity implements GoogleApiClient.OnCo
                         signOut();
                     } else {
                         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                        Bundle b = new Bundle();
+                        b.putInt("show_fav", 1);
+                        intent.putExtras(b);
                         startActivity(intent);
                         finish();
                     }
