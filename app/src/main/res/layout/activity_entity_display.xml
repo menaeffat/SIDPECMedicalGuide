@@ -17,6 +17,7 @@
         android:orientation="vertical"
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
+        app:theme="@style/Theme.AppCompat.NoActionBar"
         tools:context=".EntityDisplayActivity"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
@@ -46,6 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:layout_weight="1"
+                android:contentDescription="@string/title_phones"
                 android:onClick="showPhones"
                 android:src="@android:drawable/ic_menu_call" />
 

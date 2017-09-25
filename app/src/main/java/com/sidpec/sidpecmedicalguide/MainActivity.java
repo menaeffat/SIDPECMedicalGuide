@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -57,14 +56,16 @@ public class MainActivity extends BaseActivity
     private static final int NAV_FAV = -1;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
-    Location my_location;
+    Location my_location = null;
     boolean inLocSortMode = false;
     int catID = NAV_FAV;
+
     private DatabaseReference mDatabase;
     private DatabaseReference mCats;
     private DatabaseReference mEntity;
     private DatabaseReference mFavs;
 
+    private FloatingActionButton fab;
     private NavigationView navigationView;
     private Menu menu;
     private ListView listView;
@@ -72,80 +73,6 @@ public class MainActivity extends BaseActivity
     private ArrayAdapter<MedicalEntity> adapter;
 
     private HashMap<DatabaseReference, ValueEventListener> mListenerMap = new HashMap<>();
-
-    //    private void submitData() {
-//
-//        Toast.makeText(this, "Posting...", Toast.LENGTH_SHORT).show();
-//
-//        // [START single_value_read]
-//        final String userId = getUid();
-//        writeMedicalEntity(1, "صيدلية خليل", "23 شارع ابن ماجد، سيدي جابر", "01001661239;034274435", 30.0, 31.0, 1, "", "مواعيد العمل من 4 ل 6 ويوجد استقبال");
-//        writeMedicalEntity(2, "مستشفي اسمها طويل جدا وكمان محطوط في الاسم التخصص", "33 شارع محمد فوزي معاذ، سموحة او اي مكان تاني غير ده عشان نملأ الصفحة", "01224990651;035226784;01001661239;034246857;034274435;01227413179;01228403933;01224990651;035226784;01001661239;034246857;034274435;01227413179;01228403933", 29.5, 30.5, 2, "قلب;عظام;أطفال", "مواعيد العمل يوم الجمعة من 2 ل 3 وباقي الايام اجازة");
-//        writeMedicalEntity(3, "مركز نجا للأسنان", "شارع كنيسة الدبانة، محطة الرمل", "01096466219", 31.4, 30.45, 1, "عظام", "المركز لا يعمل اي يوم من ايام الاسبوع\nده سطر جديد بقي");
-//
-//    }
-//
-//    private void writeMedicalEntity(int entityID, String name, String address, String phone, double lat, double lon, int cat_id, String metadata, String details) {
-//
-//        // Create new post at /user-posts/$userid/$postid and at
-//        // /posts/$postid simultaneously
-//        String key = mDatabase.child("medical_entities").push().getKey();
-//        MedicalEntity medicalEntity = new MedicalEntity(entityID, name, address, phone, lat, lon, cat_id, metadata, details);
-//
-//        //Map<String, Object> postValues = post.toMap();
-//        Map<String, Object> childUpdates = new HashMap<>();
-//        childUpdates.put("/medical_entities/" + key, medicalEntity);
-//        //childUpdates.put("/user-posts/" + userId + "/" + key, postValues);
-//
-//        mDatabase.updateChildren(childUpdates);
-//    }
-    private ValueEventListener entityValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-            RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.content_home);
-            listView = new ListView(getApplicationContext());
-            arrayList = new ArrayList<MedicalEntity>();
-
-            relativeLayout.removeAllViews();
-
-            for (DataSnapshot dSnapshot : dataSnapshot.getChildren()) {
-                MedicalEntity ent = dSnapshot.getValue(MedicalEntity.class);
-                arrayList.add(ent);
-            }
-
-            Collections.sort(arrayList, new Comparator<MedicalEntity>() {
-                public int compare(MedicalEntity obj1, MedicalEntity obj2) {
-                    if (inLocSortMode) {
-                        int d1 = obj1.getDistance(my_location.getLatitude(), my_location.getLongitude());
-                        int d2 = obj2.getDistance(my_location.getLatitude(), my_location.getLongitude());
-
-                        return Integer.compare(d1, d2);
-                    } else {
-                        return obj1.name.compareTo(obj2.name);
-                    }
-                }
-            });
-
-            adapter = new medicalEntityArrayAdapter(getApplicationContext(), 0, arrayList, inLocSortMode ? my_location : null);
-            listView.setAdapter(adapter);
-            relativeLayout.addView(listView);
-
-            AdapterView.OnItemClickListener adapterViewListener = new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    showEntity(view);
-                }
-            };
-
-            listView.setOnItemClickListener(adapterViewListener);
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
     private ValueEventListener favsEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -172,6 +99,59 @@ public class MainActivity extends BaseActivity
 
         }
     };
+    private ValueEventListener entityValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+            RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.content_home);
+            listView = new ListView(getApplicationContext());
+            arrayList = new ArrayList<MedicalEntity>();
+
+            relativeLayout.removeAllViews();
+
+            for (DataSnapshot dSnapshot : dataSnapshot.getChildren()) {
+                MedicalEntity ent = dSnapshot.getValue(MedicalEntity.class);
+                arrayList.add(ent);
+            }
+
+            Collections.sort(arrayList, new Comparator<MedicalEntity>() {
+                public int compare(MedicalEntity obj1, MedicalEntity obj2) {
+                    if (inLocSortMode) {
+                        if (my_location != null) {
+                            int d1 = obj1.getDistance(my_location.getLatitude(), my_location.getLongitude());
+                            int d2 = obj2.getDistance(my_location.getLatitude(), my_location.getLongitude());
+
+                            return Integer.compare(d1, d2);
+                        } else {
+                            Toast.makeText(getApplicationContext(), R.string.no_location, Toast.LENGTH_SHORT).show();
+                            fabClick();
+                            return obj1.name.compareTo(obj2.name);
+                        }
+                    } else {
+                        return obj1.name.compareTo(obj2.name);
+                    }
+                }
+            });
+
+            adapter = new medicalEntityArrayAdapter(getApplicationContext(), 0, arrayList, inLocSortMode ? my_location : null);
+            listView.setAdapter(adapter);
+            relativeLayout.addView(listView);
+
+            AdapterView.OnItemClickListener adapterViewListener = new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    showEntity(view);
+                }
+            };
+
+            listView.setOnItemClickListener(adapterViewListener);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,16 +164,11 @@ public class MainActivity extends BaseActivity
         mDatabase.keepSynced(true);
         mCats = mDatabase.child("medical_entities/cats");
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                inLocSortMode = !inLocSortMode;
-                fab.setImageResource(inLocSortMode ? android.R.drawable.ic_menu_mylocation : android.R.drawable.ic_menu_sort_alphabetically);
-                if (catID >= 0)
-                    showEntities(catID);
-                else if (catID == -1)
-                    showFavs();
+                fabClick();
             }
         });
 
@@ -228,9 +203,8 @@ public class MainActivity extends BaseActivity
         mCats.orderByChild("order").addValueEventListener(menuCatListener);
 
         Bundle b = getIntent().getExtras();
-        int value = -1;
         if (b != null) {
-            value = b.getInt("show_fav");
+            int value = b.getInt("show_fav");
             if (value == 1)
                 showFavs();
         }
@@ -245,6 +219,15 @@ public class MainActivity extends BaseActivity
         }
 
         requestPermissions();
+    }
+
+    private void fabClick() {
+        inLocSortMode = !inLocSortMode;
+        fab.setImageResource(inLocSortMode ? android.R.drawable.ic_menu_mylocation : android.R.drawable.ic_menu_sort_alphabetically);
+        if (catID >= 0)
+            showEntities(catID);
+        else if (catID == -1)
+            showFavs();
     }
 
     private void requestPermissions() {
@@ -305,7 +288,7 @@ public class MainActivity extends BaseActivity
     @Override
     public void onLocationChanged(Location location) {
         //mLocationView.setText("Location received: " + location.toString());
-        Toast.makeText(this, location.toString(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, location.toString(), Toast.LENGTH_SHORT).show();
         my_location = location;
         if (inLocSortMode) {
             //displayContent();
@@ -337,9 +320,6 @@ public class MainActivity extends BaseActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
         if (id == R.id.action_sign_out) {
             signOut();
             return true;
@@ -471,4 +451,5 @@ public class MainActivity extends BaseActivity
     protected void onResume() {
         super.onResume();
     }
+
 }

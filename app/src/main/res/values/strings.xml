@@ -54,4 +54,6 @@
     <string name="no_search_results">مافيش نتايج للبحث ده</string>
     <string name="km_units">كم</string>
     <string name="m_units">م</string>
+
+    <string name="no_location">موقعك غير معلوم، لو سمحت شغل الGPS</string>
 </resources>

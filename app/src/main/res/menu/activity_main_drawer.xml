@@ -5,13 +5,5 @@
         android:id="@+id/group_others"
         android:checkableBehavior="none"
         android:orderInCategory="2">
-        <item
-            android:id="@+id/nav_share"
-            android:icon="@drawable/ic_menu_share"
-            android:title="Share" />
-        <item
-            android:id="@+id/nav_send"
-            android:icon="@drawable/ic_menu_send"
-            android:title="Send" />
     </group>
 </menu>
